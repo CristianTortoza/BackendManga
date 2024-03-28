@@ -1,0 +1,74 @@
+manga con user = One-To-Many
+tabla user || manga -- manga/comentarios -- manga/capitulos manga/capitulos/comentariosCapitulo ||  
+
+user {
+    mangasLike: [
+        {id: 213123123}
+        {id: 123123123}
+    ]
+
+
+}
+user uno a muchos con mangasID[]
+user uno a muchos con manga/comentariosID[]
+user uno a muchos con manga/capitulosID[]
+user uno a muchos con manga/capitulos/comentariosCapitulo[]
+user uno a muchos con manga/favoritos[]
+user uno a muchos con manga/comentariosIDlIke[]
+user uno a muchos con manga/comentariosIDreaccionID[]
+user uno a muchos con manga/capitulos/comentariosCapitulosLikeId[]
+user uno a muchos con manga/capitulos/comentariosCapitulosReaccionId[]
+
+
+mangaID uno a muchos like[userId]
+Mangaid uno a muchos comentarios[userId comentId]{
+    uno a muchos con userLike[userId],
+    uno a muchos con userReaccion[userId]
+    uno a muchos con UserComent
+}
+|| 
+manga {
+    id 
+    nombre
+    autor
+    cap
+    genero
+    vistas [contadorDeAPi]
+    calificacion[ idUser calificacionIdUser]
+    favoritos [idUser] 
+    fecha cuando
+    estado [si se completo, si sigue]
+    actualizacion (opcional es caso de que el estado no este finalizado)
+    comentarios [ 
+        {   
+            id
+            idUser
+            idManga
+            comentario
+            like[
+                idUser
+            ]
+             reaccion[
+                idUSER
+            ]
+
+        }
+    ]
+}
+
+manga {
+    cap{
+        comentariosCapitlos{
+            id
+            idUser
+            idManga
+            comentario
+            like[
+                idUser
+            ]
+            reaccion[
+                idUSER
+            ]
+        }
+    }
+}
