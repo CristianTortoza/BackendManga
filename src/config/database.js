@@ -16,13 +16,13 @@ const basename = path.basename(__filename)
 
 const modelDefiners = []
 
-fs.readdirSync(path.join(__dirname, "/src/models"))
+fs.readdirSync(path.join(__dirname, "../models"))
   .filter(
     (file) =>
       file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js",
   )
   .forEach((file) => {
-    modelDefiners.push(require(path.join(__dirname, "/src/models", file)))
+    modelDefiners.push(require(path.join(__dirname, "../models", file)))
   })
 
 modelDefiners.forEach((model) => model(sequelize))
@@ -36,10 +36,10 @@ sequelize.models = Object.fromEntries(capsEntries)
 
 const { User } = sequelize.models
 
-const ver = async () => {
+const createTables = async () => {
   await sequelize.sync()
 }
-ver()
+createTables()
 
 // Aca vendrian las relaciones
 // Product.hasMany(Reviews);
@@ -47,6 +47,5 @@ ver()
 // User.belongsToMany(Coca, { through: "DriverTeam", timestamps: false })
 module.exports = {
   ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
-  conn: sequelize, // para importart la conexión { conn } = require('./db.js');
+  db: sequelize, // para importart la conexión { conn } = require('./db.js');
 }
-
