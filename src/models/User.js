@@ -5,7 +5,7 @@ const img =
 
 module.exports = (sequelize) => {
   sequelize.define(
-    "user",
+    "User",
     {
       id: {
         type: DataTypes.UUID,
@@ -21,6 +21,9 @@ module.exports = (sequelize) => {
       email: {
         type: DataTypes.STRING,
         allowNull: false,
+        validate: {
+          isEmail: true,
+        },
       },
       password: {
         type: DataTypes.STRING,
@@ -28,7 +31,7 @@ module.exports = (sequelize) => {
       },
       country: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       user_name: {
         type: DataTypes.STRING,
@@ -42,10 +45,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: img,
-      },
-      favorites: {
-        type: DataTypes.ARRAY,
-        allowNull: true,
       },
       google: {
         type: DataTypes.BOOLEAN,
