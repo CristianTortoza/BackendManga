@@ -3,15 +3,32 @@ const argon2 = require("argon2")
 
 const userControlles = {
   createUser: async (req, res) => {
-    const { name, email, password, country, googleId, photo } = req.body
+    const { user_name, email, password, country, googleId, photo_perfil } =
+      req.body
 
     try {
+      if (googleId) {
+        const user = await User.find({ where: { googleId } })
+        if (user) {
+          return res.json({
+            success: true,
+            user,
+            message: `Bienvenid@ ${user.dataValues.user_name}, extrañabamos tu visita.
+            Esperamos que disfrutes tus lecturas.`,
+            error: null,
+          })
+        }
+      }
+
       const userExist = await User.findOne({ where: { email } })
       if (userExist)
         throw new Error(
-          "El mail, ya se encuentra registrado, por favor inicie sesión",
+          "El mail ya se encuentra registrado, por favor inicie sesión",
         )
-      const hashPassword = await argon2.hash(password, { type: argon2.argon2i })
+
+      const hashPassword = await argon2.hash(googleId ? googleId : password, {
+        type: argon2.argon2i,
+      })
       const verify_code = Math.random()
         .toString(36)
         .replace(/[^a-z0-9]+/g, "")
@@ -19,19 +36,22 @@ const userControlles = {
         .toUpperCase()
 
       const user = await User.create({
-        name,
+        user_name,
         email,
         password: hashPassword,
         country,
         googleId,
-        photo,
+        photo_perfil,
         google: googleId && true,
+        verify: googleId && true,
         verify_code,
       })
       // enviar un mail, cuando este regristado ya, con el verify code.
       res.json({
         success: true,
         user,
+        message: `Bienvenid@ al mundo Otakuneta ${user.dataValues.user_name}, 
+        Esperamos que disfrute su visita.`,
         error: null,
       })
     } catch (e) {
@@ -39,43 +59,106 @@ const userControlles = {
         success: false,
         user: null,
         error: e,
+        message: e.message,
       })
     }
   },
 
   logIn: async (req, res) => {
-    const { name, email, password, googleId } = req.body
+    const { user_name_or_email, password, googleId } = req.body
 
     try {
       const error = () => {
         throw new Error(
-          "Datos ingresados incorrectos. Por favor intentelo de nuevo",
+          "Datos ingresados incorrectos, por favor intentelo de nuevo",
         )
       }
+      const user = {}
+      if (user_name_or_email.includes("@")) {
+        if (googleId) {
+          user = await User.findOne({ where: { googleId } })
+        } else {
+          user = await User.findOne({ where: { email } })
+        }
+      } else {
+        user = await User.findOne({ where: { user_name } })
+      }
 
-      const user = await User.findOne({ where: { email } })
-      console.log("aaa", user)
-      if (!user) error()
+      if (!user) return error()
 
-      const verifyPassword = await argon2.verify(
-        user.dataValues.password,
-        password,
-      )
-      if (!verifyPassword) error()
+      if (user && googleId)
+        return res.json({
+          success: true,
+          res: user,
+          error: null,
+          message: `Bienvenid@ ${user.dataValues.user_name}, extrañabamos tu visita.
+          Esperamos que disfrutes tus lecturas.`,
+        })
 
-      console.log(dataValues)
-      res.json({
-        dataValues,
+      if (!(await argon2.verify(user.dataValues.password, password)))
+        return error()
+
+      return res.json({
+        success: true,
+        res: user,
+        error: null,
+        message: `Bienvenid@ ${user.dataValues.user_name}, extrañabamos tu visita.
+          Esperamos que disfrutes tus lecturas.`,
       })
     } catch (e) {
       res.json({
         success: false,
+        user: null,
         error: e,
+        message: e.message,
       })
     }
   },
 
-  editUser: async (req, res) => {},
+  editUser: async (req, res) => {
+    // si es user normal, puede modificar la contraseña, si es de google no.
+    const { user_name, password, newPassword, img, country, googleId } =
+      req.body
+    try {
+      const user = await User.find({ where: { user_name } })
+      if (!user)
+        throw new Error(
+          "Hubo un error al encontrar el usuario, vuelva a intentar. Si el error persiste, intentelo mas tarde",
+        )
+
+      if (!googleId) {
+        if (!(await argon2.verify(user.dataValues.password, password)))
+          throw new Error("Contraseña ingresada incorrecta.")
+      }
+
+      // hacer valdiación de hace cuanto cambio el user su user_name
+      //
+      user.set({
+        user_name: user_name,
+        password: newPassword ? newPassword : user.dataValues.password,
+        img: img,
+        country: country,
+      })
+
+      const newUser = await user.save()
+
+      res.json({
+        success: true,
+        user: newUser,
+        error: e,
+        message: `${newUser.dataValues.user_name}, 
+        ya tienes un nuevo flow.`,
+      })
+    } catch (e) {
+      res.json({
+        success: false,
+        user: null,
+        error: e,
+        message: e.message,
+      })
+    }
+    // al crear el user_name no se aceptaran @ ni caracteres especiales, solo letras y numeros
+  },
 
   verifyUser: async (req, res) => {
     /* Esto es en caso de que no haya iniciado sesion con google, si es así verify pasa a true directamente */

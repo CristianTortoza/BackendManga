@@ -14,7 +14,7 @@ module.exports = (sequelize) => {
         allowNull: false,
         unique: true,
       },
-      name: {
+      user_name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
@@ -33,15 +33,12 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      user_name: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
+
       birth_date: {
         type: DataTypes.DATE,
         allowNull: true,
       },
-      photo: {
+      photo_perfil: {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: img,
@@ -67,6 +64,10 @@ module.exports = (sequelize) => {
       },
       verify_code: {
         type: DataTypes.STRING,
+        allowNull: false,
+      },
+      dateUpdateUserName: {
+        type: DataTypes.DATE,
         allowNull: false,
       },
     },
