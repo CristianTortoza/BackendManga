@@ -34,7 +34,7 @@ let capsEntries = entries.map((entry) => [
 ])
 sequelize.models = Object.fromEntries(capsEntries)
 
-const { User } = sequelize.models
+const { User,Favorite } = sequelize.models
 
 const createTables = async () => {
   await sequelize.sync()
@@ -42,7 +42,8 @@ const createTables = async () => {
 createTables()
 
 // Aca vendrian las relaciones
-// Product.hasMany(Reviews);
+User.hasMany(Favorite);
+Favorite.belongsTo(User);
 // Coca.belongsToMany(User, { through: "DriverTeam", timestamps: false })
 // User.belongsToMany(Coca, { through: "DriverTeam", timestamps: false })
 module.exports = {
